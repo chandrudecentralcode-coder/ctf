@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CTF 2026 - 7 Hour Event Schedule | Official Rules</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background: #f5f5f5;
+            color: #1a1a2e;
+            line-height: 1.5;
+            padding: 30px;
+        }
+
+        /* PDF Optimized Container */
+        .pdf-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #0a0f1e 0%, #1a1a3e 100%);
+            color: white;
+            padding: 35px 40px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .header h1 span {
+            color: #00d4ff;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.85;
+        }
+
+        .flag-badge {
+            display: inline-block;
+            background: rgba(0,212,255,0.2);
+            border: 1px solid #00d4ff;
+            border-radius: 30px;
+            padding: 6px 20px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+
+        /* Content */
+        .content {
+            padding: 30px 40px;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a3e;
+            border-left: 5px solid #00d4ff;
+            padding-left: 15px;
+            margin: 25px 0 20px 0;
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        /* Timeline */
+        .timeline-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .timeline-row {
+            display: flex;
+            background: #f8f9fc;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #e0e4e8;
+            transition: transform 0.1s;
+        }
+
+        .timeline-time {
+            width: 130px;
+            background: #1a1a3e;
+            color: #00d4ff;
+            font-weight: bold;
+            padding: 15px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timeline-desc {
+            flex: 1;
+            padding: 12px 18px;
+            background: white;
+        }
+
+        .timeline-desc strong {
+            color: #1a1a3e;
+            font-size: 16px;
+        }
+
+        .timeline-desc p {
+            color: #555;
+            margin-top: 5px;
+            font-size: 14px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .badge-easy { background: #2ecc71; color: #000; }
+        .badge-medium { background: #f39c12; color: #000; }
+        .badge-hard { background: #e74c3c; color: #fff; }
+        .badge-insane { background: #9b59b6; color: #fff; }
+        .badge-info { background: #3498db; color: #fff; }
+
+        /* Stats Summary */
+        .stats-summary {
+            display: flex;
+            justify-content: space-between;
+            background: linear-gradient(135deg, #e8f4fd, #f0f2f5);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .stat-card {
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1a1a3e;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        /* Tables */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 14px;
+        }
+
+        .info-table th, .info-table td {
+            border: 1px solid #ddd;
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        .info-table th {
+            background: #1a1a3e;
+            color: white;
+            font-weight: 600;
+        }
+
+        .info-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        /* Flag Format Box */
+        .flag-box {
+            background: #1a1a3e;
+            color: #00d4ff;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-size: 18px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .discord-channels {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 15px 0;
+        }
+
+        .channel {
+            background: #5865f2;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        hr {
+            margin: 25px 0;
+            border: none;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ccc, transparent);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #888;
+            border-top: 1px solid #eee;
+            margin-top: 20px;
+        }
+
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                margin: 0;
+            }
+            .pdf-container {
+                box-shadow: none;
+                margin: 0;
+                max-width: 100%;
+            }
+            .timeline-row {
+                break-inside: avoid;
+            }
+            .badge {
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="pdf-container">
+    <div class="header">
+        <h1>🏆 CTF 2026: <span>7-HOUR RAPID-FIRE</span> 🏆</h1>
+        <p>Capture The Flag — Intensive Short Format | Official Schedule & Rules</p>
+        <div class="flag-badge">
+            🔑 CORRECT FLAG FORMAT: <strong>codef{...}</strong> | Example: <strong>codef{WeLcOmE_To_CtF}</strong>
+        </div>
+        <div class="flag-badge" style="margin-top: 8px; background: rgba(255,0,100,0.15);">
+            ❌ WRONG: <code>codef{WeLcOmEToCtF}</code> → ✅ CORRECT: <code>codef{WeLcOmE_To_CtF}</code>
+        </div>
+    </div>
+
+    <div class="content">
+        <!-- ===== FLAG FORMAT RULES ===== -->
+        <div class="section-title">🏁 FLAG FORMAT — RULES & VALIDATION</div>
+        <table class="info-table">
+            <tr><th>Rule</th><th>Description</th></tr>
+            <tr><td>Prefix</td><td>Must start with <code>codef{</code> (lowercase)</td></tr>
+            <tr><td>Suffix</td><td>Must end with <code>}</code></td></tr>
+            <tr><td>Case-Sensitive</td><td><code>codef{WeLcOmE}</code> ≠ <code>coedf{welcome}</code></td></tr>
+            <tr><td>Allowed Characters</td><td><code>a-z A-Z 0-9 _ ! @ # $ % & * - + =</code></td></tr>
+            <tr><td>No Spaces</td><td>No whitespace inside braces</td></tr>
+            <tr><td>No Newlines</td><td>Single line only</td></tr>
+        </table>
+        <div class="flag-box">
+            ✅ VALID: codef{WeLcOmE_To_CtF} | codef{sql1_1nj3ct10n} | codef{R3v3rs3_!s_C00l}
+        </div>
+
+        <!-- ===== 7-HOUR CORRECT SCHEDULE ===== -->
+        <div class="section-title">⏰ 7-HOUR EVENT SCHEDULE (CORRECTED)</div>
+        <div class="timeline-grid">
+            <div class="timeline-row">
+                <div class="timeline-time">HOUR 0<br><span style="font-size:11px;">10:00</span></div>
+                <div class="timeline-desc">
+                    <strong>🎬 OPENING CEREMONY + START</strong>
+                    <p>Rules briefing, platform access, team check-in. <span class="badge badge-easy">10 Easy</span> Challenges released immediately.<br>
+                    📢 #announcements: Flag format verified — <code>codef{...}</code> only.</p>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-time">HOUR 1<br><span style="font-size:11px;">11:00</span></div>
+                <div class="timeline-desc">
+                    <strong>🔥 FIRST BLOOD WINDOW OPENS</strong>
+                    <p><span class="badge badge-easy">+5 Easy</span> Challenges (Total 15 Easy). Scoreboard goes live. First Blood bonus active for 30 mins.</p>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-time">HOUR 2<br><span style="font-size:11px;">12:00</span></div>
+                <div class="timeline-desc">
+                    <strong>⚡ MEDIUM TIER UNLOCKED</strong>
+                    <p><span class="badge badge-medium">6 Medium</span> Challenges released. <span class="badge badge-info">💡 First Hints</span> available in #hints channel.<br>
+                    Easy challenges remain solvable.</p>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-time">HOUR 3<br><span style="font-size:11px;">13:00</span></div>
+                <div class="timeline-desc">
+                    <strong>📈 MEDIUM + MORE</strong>
+                    <p><span class="badge badge-medium">+4 Medium</span> Challenges (Total 10 Medium). <span class="badge badge-info">🏆 Mini-scoreboard</span> update & Leaderboard shoutout.</p>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-time">HOUR 4<br><span style="font-size:11px;">14:00</span></div>
+                <div class="timeline-desc">
+                    <strong>🔓 HARD CHALLENGES + BONUS CATEGORIES</strong>
+                    <p><span class="badge badge-hard">5 Hard</span> Challenges released. <span class="badge badge-info">🔓 Bonus Categories:</span> Forensics + Steganography unlocked (6 challenges total).</p>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-time">HOUR 5<br><span style="font-size:11px;">15:00</span></div>
+                <div class="timeline-desc">
+                    <strong>💀 HARD+ & INSANE EARLY ACCESS</strong>
+                    <p><span class="badge badge-hard">+3 Hard</span> (Total 8 Hard). <span class="badge badge-insane">2 Insane</span> Challenges (Early access for top teams).<br>
+                    🔥 Double blood bonus for Insane category.</p>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-time">HOUR 6<br><span style="font-size:11px;">16:00</span></div>
+                <div class="timeline-desc">
+                    <strong>💀💀 FINAL INSANE WAVE</strong>
+                    <p><span class="badge badge-insane">+3 Insane</span> (Total 5 Insane). <span class="badge badge-info">🔥 Last Blood Bonus</span> active — final hour for unique solves.<br>
+                    All remaining hints released.</p>
+                </div>
+            </div>
+            <div class="timeline-row">
+                <div class="timeline-time">HOUR 7<br><span style="font-size:11px;">17:00 - 18:00</span></div>
+                <div class="timeline-desc">
+                    <strong>⛔ FINAL COUNTDOWN & END</strong>
+                    <p><strong>LAST 30 MINUTES:</strong> Final submission window. <strong>17:55:</strong> Platform locks. <strong>18:00:</strong> CTF ENDS — submissions closed.<br>
+                    🏁 Closing Ceremony + Winners Announced in #announcements.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Summary -->
+        <div class="stats-summary">
+            <div class="stat-card"><div class="stat-number">38</div><div class="stat-label">Total Challenges</div></div>
+            <div class="stat-card"><div class="stat-number">7</div><div class="stat-label">Hours Duration</div></div>
+            <div class="stat-card"><div class="stat-number">~8,800</div><div class="stat-label">Max Points</div></div>
+        </div>
+
+        <!-- Challenge Distribution Table -->
+        <div class="section-title">📊 CHALLENGE DISTRIBUTION</div>
+        <table class="info-table">
+            <thead>
+                <tr><th>Difficulty</th><th>Count</th><th>Base Points Each</th><th>Total Points Pool</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>🟢 Easy</td><td>15</td><td>100</td><td>1,500</td></tr>
+                <tr><td>🟡 Medium</td><td>10</td><td>200</td><td>2,000</td></tr>
+                <tr><td>🔴 Hard</td><td>8</td><td>350</td><td>2,800</td></tr>
+                <tr><td>⚫ Insane</td><td>5</td><td>500</td><td>2,500</td></tr>
+                <tr style="background:#e8f4fd;"><td><strong>TOTAL</strong></td><td><strong>38</strong></td><td>—</td><td><strong>~8,800</strong></td></tr>
+            </tbody>
+        </table>
+
+        <!-- Discord Channels -->
+        <div class="section-title">💬 DISCORD CHANNELS (REAL-TIME SUPPORT)</div>
+        <div class="discord-channels">
+            <span class="channel">📢 #announcements</span>
+            <span class="channel">💬 #general-chat</span>
+            <span class="channel">❓ #help-support</span>
+            <span class="channel">💡 #hints</span>
+            <span class="channel">🏆 #scoreboard</span>
+            <span class="channel">🔒 #disputes</span>
+            <span class="channel">🎉 #solved-shoutout</span>
+            <span class="channel">🤖 #bot-commands</span>
+            <span class="channel">🔧 #infrastructure</span>
+            <span class="channel">📁 #resources-writeups</span>
+            <span class="channel">🕹️ #ctf-voice</span>
+        </div>
+
+        <!-- General Rules Summary -->
+        <div class="section-title">📜 GENERAL RULES (QUICK REFERENCE)</div>
+        <table class="info-table">
+            <tr><th style="width:40%">Rule Category</th><th>Details</th></tr>
+            <tr><td>✅ DO's</td><td>Use public tools, collaborate internally, research online, report bugs to admins.</td></tr>
+            <tr><td>❌ DON'Ts</td><td>No flag sharing, no platform attacks, no brute-force submissions, no multiple accounts.</td></tr>
+            <tr><td>📝 Submissions</td><td>Max 10 attempts per challenge | 30s cooldown | Rate limit: 60/min globally.</td></tr>
+            <tr><td>⚖️ Penalties</td><td>Warning → -100pts → Temp Ban → Disqualification.</td></tr>
+            <tr><td>🏆 Tie-breaker</td><td>Fewer total incorrect submissions wins.</td></tr>
+        </table>
+    </div>
+</div>
+
+<!-- Print instructions for PDF -->
+<div style="text-align: center; margin-top: 20px; font-family: monospace;">
+    <button onclick="window.print();" style="padding: 10px 25px; background: #1a1a3e; color: white; border: none; border-radius: 30px; cursor: pointer; font-size: 14px;">🖨️ Save as PDF (Ctrl+P or Cmd+P)</button>
+    <p style="font-size: 12px; margin-top: 10px;">Tip: In print dialog, choose "Save as PDF" for best results.</p>
+</div>
+</body>
+</html>
