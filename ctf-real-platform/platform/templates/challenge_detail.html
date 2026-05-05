@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{% block title %}{{ ch.name }}{% endblock %}
+{% block content %}
+
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/challenges">Challenges</a></li>
+        <li class="breadcrumb-item active">{{ ch.name }}</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+
+        <!-- Challenge info -->
+        <div class="card p-4 mb-4">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                <h2 class="mb-0">{{ ch.name }}</h2>
+                <div>
+                    <span class="badge badge-web me-1">{{ ch.category }}</span>
+                    <span class="badge {% if ch.difficulty=='Easy' %}badge-easy{% elif ch.difficulty=='Medium' %}badge-medium{% else %}badge-hard{% endif %}">
+                        {{ ch.difficulty }}
+                    </span>
+                </div>
+            </div>
+            <p class="mb-3">{{ ch.description }}</p>
+            <hr style="border-color:#21262d">
+            <div class="d-flex flex-wrap gap-4 text-muted small">
+                <span>
+                    <i class="bi bi-star-fill text-warning"></i>
+                    <strong class="points-color">{{ ch.points }}</strong> points
+                </span>
+                <span>
+                    <i class="bi bi-people"></i> {{ solve_count }} solve{{ 's' if solve_count != 1 }}
+                </span>
+                <span>
+                    <i class="bi bi-server text-info"></i>
+                    <a href="/proxy/{{ ch.port }}/" target="_blank" class="text-info">
+                        Open Challenge <i class="bi bi-box-arrow-up-right small"></i>
+                    </a>
+                </span>
+            </div>
+        </div>
+
+        <!-- CTF ended banner -->
+        {% if ctf_ended %}
+        <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-flag-fill fs-5"></i>
+            <div><strong>CTF has ended.</strong> You can still view this challenge but flag submission is closed.</div>
+        </div>
+        {% endif %}
+
+        <!-- Solved banner -->
+        {% if solved %}
+        <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-check-circle-fill fs-5"></i>
+            <strong>Challenge solved!</strong> Well done.
+        </div>
+        {% endif %}
+
+        <!-- Rate-limit lock banner -->
+        {% if locked %}
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-stopwatch-fill fs-5"></i>
+            <div>
+                <strong>Submission locked.</strong>
+                Too many wrong attempts. Wait <strong>{{ cooldown }}s</strong> before trying again.
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Flag submit -->
+        {% if not solved and not ctf_ended %}
+        <div class="card p-4 mb-4 {% if locked %}locked-overlay{% endif %}">
+            <h5 class="mb-3">
+                <i class="bi bi-flag-fill text-danger"></i> Submit Flag
+                {% if not locked %}
+                <span class="badge bg-secondary ms-2 small" id="attemptsLeft">
+                    {{ attempts_left }} attempt{{ 's' if attempts_left != 1 }} left
+                </span>
+                {% endif %}
+            </h5>
+            <div class="input-group">
+                <input type="text" id="flagInput" class="form-control flag-input"
+                       placeholder="flag{...}" autocomplete="off" spellcheck="false"
+                       {% if locked %}disabled{% endif %}>
+                <button class="btn btn-danger fw-bold" onclick="submitFlag({{ ch.id }})"
+                        {% if locked %}disabled{% endif %}>
+                    Submit
+                </button>
+            </div>
+            <div id="flagResult" class="mt-2"></div>
+        </div>
+        {% endif %}
+
+
+    </div>
+
+    <!-- Right: solvers -->
+    <div class="col-lg-4">
+        <div class="card p-3">
+            <h6 class="mb-3">
+                <i class="bi bi-people-fill"></i> Solvers
+                <span class="badge bg-secondary ms-1">{{ solve_count }}</span>
+            </h6>
+            {% if solvers %}
+            <ul class="list-unstyled mb-0">
+                {% for s in solvers %}
+                <li class="d-flex justify-content-between align-items-center mb-2 small">
+                    <span>
+                        {% if loop.index0 == 0 %}
+                            <i class="bi bi-droplet-fill first-blood" title="First Blood!"></i>
+                        {% elif loop.index0 == 1 %}
+                            <i class="bi bi-trophy-fill rank-2"></i>
+                        {% elif loop.index0 == 2 %}
+                            <i class="bi bi-trophy-fill rank-3"></i>
+                        {% else %}
+                            <i class="bi bi-person text-muted"></i>
+                        {% endif %}
+                        <strong>{{ s.username }}</strong>
+                    </span>
+                    <span class="text-muted font-monospace">{{ s.solved_at[:16] if s.solved_at else '' }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted small mb-0">
+                <i class="bi bi-droplet-fill text-danger"></i>
+                No solvers yet — get first blood!
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+let attemptsLeft = {{ attempts_left }};
+
+async function submitFlag(cid) {
+    const flag      = document.getElementById('flagInput').value.trim();
+    const resultDiv = document.getElementById('flagResult');
+    if (!flag) return;
+
+    const resp = await fetch(`/api/submit/${cid}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `flag=${encodeURIComponent(flag)}`
+    });
+    if (!resp.ok && resp.status !== 200) {
+        resultDiv.innerHTML = `<div class="alert alert-danger mt-1 py-2">Server error. Please try again.</div>`;
+        return;
+    }
+    const data = await resp.json();
+
+    if (data.status === 'correct') {
+        resultDiv.innerHTML = `<div class="alert alert-success mt-1 py-2">
+            <i class="bi bi-check-circle-fill"></i> ${data.msg}
+        </div>`;
+        setTimeout(() => location.reload(), 1800);
+
+    } else if (data.status === 'already') {
+        resultDiv.innerHTML = `<div class="alert alert-info mt-1 py-2">${data.msg}</div>`;
+
+    } else if (data.status === 'locked') {
+        resultDiv.innerHTML = `<div class="alert alert-danger mt-1 py-2">
+            <i class="bi bi-stopwatch-fill"></i> ${data.msg}
+        </div>`;
+        setTimeout(() => location.reload(), 2000);
+
+    } else {
+        attemptsLeft = Math.max(0, attemptsLeft - 1);
+        const el = document.getElementById('attemptsLeft');
+        if (el) el.textContent = `${attemptsLeft} attempt${attemptsLeft !== 1 ? 's' : ''} left`;
+
+        const cls = attemptsLeft === 0 ? 'danger' : 'warning';
+        resultDiv.innerHTML = `<div class="alert alert-${cls} mt-1 py-2">
+            <i class="bi bi-x-circle-fill"></i> ${data.msg}
+        </div>`;
+        if (attemptsLeft === 0) setTimeout(() => location.reload(), 1500);
+    }
+}
+
+
+document.getElementById('flagInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitFlag({{ ch.id }});
+});
+</script>
+{% endblock %}

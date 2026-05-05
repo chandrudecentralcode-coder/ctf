@@ -1,1 +1,0 @@
-CTF{hard_filter_bypass_command_injection_lfi}

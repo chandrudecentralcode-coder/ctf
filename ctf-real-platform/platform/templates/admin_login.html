@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Admin{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4">
+        <div class="card p-4" style="border-color:#da3633">
+            <h3 class="mb-4 text-center fw-bold">
+                <i class="bi bi-shield-lock-fill text-danger"></i> Admin Access
+            </h3>
+            <form method="POST" action="/yournotallow/auth" autocomplete="off">
+                <div class="mb-4">
+                    <label class="form-label">Admin Password</label>
+                    <input type="password" name="password" class="form-control"
+                           required autofocus placeholder="Enter admin password">
+                </div>
+                <button type="submit" class="btn btn-danger w-100 fw-bold">
+                    Login as Admin
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

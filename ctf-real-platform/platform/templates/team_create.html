@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Create Team{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <h3 class="mb-1 fw-bold text-center">
+                <i class="bi bi-plus-circle-fill" style="color:#8957e5"></i> Create a Team
+            </h3>
+            <p class="text-muted text-center small mt-1 mb-4">
+                Teams can have up to <strong>3 members</strong>.
+                You will receive a secret invite code to share with your teammates.
+            </p>
+
+            <form method="POST" autocomplete="off">
+                <div class="mb-4">
+                    <label class="form-label">Team Name</label>
+                    <input type="text" name="team_name" class="form-control" required
+                           autofocus minlength="3" maxlength="32"
+                           placeholder="e.g. CyberSquad, HackersAnon…">
+                    <div class="form-text">3–32 characters, must be unique</div>
+                </div>
+                <button type="submit" class="btn w-100 fw-bold"
+                        style="background:#8957e5;color:white">
+                    <i class="bi bi-people-fill"></i> Create Team &amp; Get Invite Code
+                </button>
+            </form>
+
+            <hr style="border-color:#21262d;margin:20px 0">
+            <p class="text-center small text-muted mb-0">
+                Already have a code? <a href="/teams/join">Join a team instead</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

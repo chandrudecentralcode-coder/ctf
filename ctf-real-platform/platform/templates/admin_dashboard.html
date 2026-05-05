@@ -1,0 +1,225 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">
+        <i class="bi bi-shield-lock-fill text-danger"></i> Admin Dashboard
+    </h2>
+    <a href="/yournotallow/logout" class="btn btn-sm btn-outline-danger">Logout</a>
+</div>
+
+<!-- ── CTF Time Window ──────────────────────────────────────────────────── -->
+<div class="card p-4 mb-4">
+    <h5 class="mb-3">
+        <i class="bi bi-clock-fill text-info"></i> CTF Time Window
+        <span class="badge ms-2
+            {% if ctf_state == 'open' %}bg-success
+            {% elif ctf_state == 'not_started' %}bg-warning text-dark
+            {% else %}bg-danger{% endif %}">
+            {% if ctf_state == 'open' %}OPEN
+            {% elif ctf_state == 'not_started' %}NOT STARTED
+            {% else %}ENDED{% endif %}
+        </span>
+    </h5>
+
+    <form method="POST" action="/yournotallow/settings/time" class="row g-3 align-items-end">
+        <div class="col-md-5">
+            <label class="form-label text-muted small">Start Time</label>
+            <input type="datetime-local" name="start_time" class="form-control"
+                   value="{{ ctf_start.strftime('%Y-%m-%dT%H:%M') if ctf_start else '' }}">
+            <div class="form-text text-muted">Leave blank = no start restriction</div>
+        </div>
+        <div class="col-md-5">
+            <label class="form-label text-muted small">End Time</label>
+            <input type="datetime-local" name="end_time" class="form-control"
+                   value="{{ ctf_end.strftime('%Y-%m-%dT%H:%M') if ctf_end else '' }}">
+            <div class="form-text text-muted">Leave blank = no end restriction</div>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-info w-100">
+                <i class="bi bi-save"></i> Save
+            </button>
+        </div>
+    </form>
+
+    {% if ctf_start or ctf_end %}
+    <div class="mt-3 p-2 rounded" style="background:#0d1117; border:1px solid #21262d; font-size:.85em;">
+        <span class="text-muted">Window:</span>
+        <strong class="text-info">
+            {{ ctf_start.strftime('%Y-%m-%d %H:%M') if ctf_start else '∞' }}
+        </strong>
+        <span class="text-muted mx-1">→</span>
+        <strong class="text-info">
+            {{ ctf_end.strftime('%Y-%m-%d %H:%M') if ctf_end else '∞' }}
+        </strong>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-5">
+    <div class="col-6 col-md-3">
+        <div class="card p-3 text-center">
+            <div class="fs-3 fw-bold text-warning">{{ stats.total_users }}</div>
+            <div class="text-muted small">Players</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card p-3 text-center">
+            <div class="fs-3 fw-bold" style="color:#8957e5">{{ stats.total_teams }}</div>
+            <div class="text-muted small">Teams</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card p-3 text-center">
+            <div class="fs-3 fw-bold text-success">{{ stats.total_solves }}</div>
+            <div class="text-muted small">Total Solves</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card p-3 text-center">
+            <div class="fs-3 fw-bold {{ 'text-success' if stats.whitelist_active else 'text-muted' }}">
+                {{ 'ON' if stats.whitelist_active else 'OFF' }}
+            </div>
+            <div class="text-muted small">Email Whitelist</div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Email Whitelist ─────────────────────────────────────────────────── -->
+<div class="card p-4 mb-4">
+    <h5 class="mb-3">
+        <i class="bi bi-envelope-check-fill text-success"></i> Email Whitelist
+        <span class="badge {{ 'bg-success' if stats.whitelist_active else 'bg-secondary' }} ms-2">
+            {{ 'ACTIVE — only whitelisted emails can register' if stats.whitelist_active else 'INACTIVE — open registration' }}
+        </span>
+    </h5>
+
+    <form method="POST" action="/yournotallow/emails/add" class="row g-2 mb-4">
+        <div class="col-md-5">
+            <input type="email" name="email" class="form-control" placeholder="player@example.com" required>
+        </div>
+        <div class="col-md-4">
+            <input type="text" name="note" class="form-control" placeholder="Note (optional, e.g. Team A)">
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-success w-100">
+                <i class="bi bi-plus-circle"></i> Add Email
+            </button>
+        </div>
+    </form>
+
+    {% if emails %}
+    <div class="table-responsive">
+        <table class="table table-dark table-sm align-middle mb-0">
+            <thead><tr><th>#</th><th>Email</th><th>Note</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for em in emails %}
+            <tr>
+                <td class="text-muted">{{ loop.index }}</td>
+                <td><code>{{ em.email }}</code></td>
+                <td class="text-muted small">{{ em.note or '—' }}</td>
+                <td>
+                    <form method="POST" action="/yournotallow/emails/remove/{{ em.id }}"
+                          onsubmit="return confirm('Remove {{ em.email }}?')">
+                        <button class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-trash"></i> Remove
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted small mb-0">
+        No emails in whitelist — registration is currently open to everyone.
+        Add at least one email to enable restriction.
+    </p>
+    {% endif %}
+</div>
+
+<!-- ── Teams ──────────────────────────────────────────────────────────── -->
+<div class="card p-4 mb-4">
+    <h5 class="mb-3">
+        <i class="bi bi-people-fill" style="color:#8957e5"></i>
+        Teams ({{ teams|length }}, max {{ max_team }} members each)
+    </h5>
+    {% if teams %}
+    <div class="table-responsive">
+        <table class="table table-dark table-sm align-middle mb-0">
+            <thead><tr><th>Team</th><th>Invite Code</th><th>Members</th><th>Score</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for t in teams %}
+            <tr>
+                <td><strong>{{ t.name }}</strong></td>
+                <td><code style="color:#c3abff">{{ t.invite_code }}</code></td>
+                <td>
+                    <span class="{{ 'text-danger' if t.member_count >= max_team else 'text-success' }}">
+                        {{ t.member_count }}/{{ max_team }}
+                    </span>
+                </td>
+                <td class="points-color">{{ t.score }}</td>
+                <td>
+                    <form method="POST" action="/yournotallow/teams/remove/{{ t.id }}"
+                          onsubmit="return confirm('Dissolve team {{ t.name }}? Members will be unassigned.')">
+                        <button class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-x-circle"></i> Dissolve
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted small mb-0">No teams yet.</p>
+    {% endif %}
+</div>
+
+<!-- ── Players ─────────────────────────────────────────────────────────── -->
+<div class="card p-4">
+    <h5 class="mb-3">
+        <i class="bi bi-person-fill text-warning"></i> Players ({{ users|length }})
+    </h5>
+    {% if users %}
+    <div class="table-responsive">
+        <table class="table table-dark table-sm align-middle mb-0">
+            <thead><tr><th>#</th><th>Username</th><th>Email</th><th>Team</th><th>Score</th><th>Joined</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for u in users %}
+            <tr>
+                <td class="text-muted">{{ loop.index }}</td>
+                <td><strong>{{ u.username }}</strong></td>
+                <td class="text-muted small">{{ u.email }}</td>
+                <td>
+                    {% if u.team_name %}
+                    <span class="badge team-badge">{{ u.team_name }}</span>
+                    {% else %}
+                    <span class="text-muted small">—</span>
+                    {% endif %}
+                </td>
+                <td class="points-color">{{ u.score }}</td>
+                <td class="text-muted small font-monospace">{{ u.created_at[:10] }}</td>
+                <td>
+                    <form method="POST" action="/yournotallow/users/remove/{{ u.id }}"
+                          onsubmit="return confirm('Delete user {{ u.username }}?')">
+                        <button class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-person-x"></i> Remove
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted small mb-0">No players yet.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

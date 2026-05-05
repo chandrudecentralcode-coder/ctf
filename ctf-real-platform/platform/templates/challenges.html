@@ -1,0 +1,146 @@
+{% extends "base.html" %}
+{% block title %}Challenges{% endblock %}
+{% block content %}
+
+{% if ctf_locked %}
+<!-- ── CTF Locked Screen ──────────────────────────────────────────────── -->
+<div class="text-center py-5">
+    {% if ctf_state == 'not_started' %}
+    <i class="bi bi-hourglass-split text-warning" style="font-size:4rem;"></i>
+    <h2 class="mt-3 mb-2">CTF Has Not Started Yet</h2>
+    <p class="text-muted mb-1">The competition will begin at:</p>
+    <div class="display-6 text-warning fw-bold my-3">
+        {{ boundary.strftime('%Y-%m-%d %H:%M') if boundary else '—' }}
+    </div>
+    <p class="text-muted small">Countdown:</p>
+    <div class="fs-3 fw-bold text-info" id="countdown">—</div>
+    {% else %}
+    <i class="bi bi-flag-fill text-danger" style="font-size:4rem;"></i>
+    <h2 class="mt-3 mb-2">CTF Has Ended</h2>
+    <p class="text-muted">The competition ended at
+        <strong class="text-danger">
+            {{ ctf_end.strftime('%Y-%m-%d %H:%M') if ctf_end else '—' }}
+        </strong>.
+    </p>
+    <a href="/scoreboard" class="btn btn-outline-warning mt-3">
+        <i class="bi bi-trophy-fill"></i> View Final Scoreboard
+    </a>
+    {% endif %}
+</div>
+
+{% else %}
+<!-- ── Normal Challenges List ─────────────────────────────────────────── -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0"><i class="bi bi-flag-fill text-danger"></i> Challenges</h2>
+    <span class="text-muted">
+        <i class="bi bi-check-circle-fill text-success"></i>
+        {{ solved_ids|length }} / {{ challenges|length }} solved
+    </span>
+</div>
+
+{% if ctf_state == 'ended' %}
+<div class="alert alert-warning py-2 mb-3 small">
+    <i class="bi bi-flag-fill"></i>
+    <strong>CTF has ended.</strong> Challenges are now read-only — flag submission is closed.
+</div>
+{% elif ctf_end %}
+<div class="alert alert-info py-2 mb-3 small">
+    <i class="bi bi-clock"></i>
+    CTF ends at <strong>{{ ctf_end.strftime('%Y-%m-%d %H:%M') }}</strong>
+    — <span id="ctf-countdown" class="fw-bold"></span>
+</div>
+{% endif %}
+
+<div class="row g-3">
+    {% for ch in challenges %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card h-100 p-3 {% if ch.id in solved_ids %}solved-card{% endif %}"
+             style="cursor:pointer;" onclick="location.href='/challenges/{{ ch.id }}'">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="badge badge-{{ ch.category|lower }}">{{ ch.category }}</span>
+                <span class="badge
+                    {% if ch.difficulty == 'Easy' %}badge-easy
+                    {% elif ch.difficulty == 'Medium' %}badge-medium
+                    {% else %}badge-hard{% endif %}">
+                    {{ ch.difficulty }}
+                </span>
+            </div>
+
+            <h5 class="mb-1">
+                {% if ch.id in solved_ids %}
+                    <i class="bi bi-check-circle-fill text-success me-1"></i>
+                {% endif %}
+                {{ ch.name }}
+            </h5>
+
+            <p class="text-muted small mb-3 lh-sm">
+                {{ ch.description[:90] }}{% if ch.description|length > 90 %}…{% endif %}
+            </p>
+
+            <div class="d-flex justify-content-between align-items-center mt-auto pt-2"
+                 style="border-top:1px solid #21262d">
+                <span class="points-color">
+                    <i class="bi bi-star-fill"></i> {{ ch.points }} pts
+                </span>
+                <span class="text-muted small">
+                    <i class="bi bi-people"></i> {{ solve_counts.get(ch.id, 0) }} solves
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+{% if ctf_locked and ctf_state == 'not_started' and boundary %}
+(function() {
+    var target = new Date("{{ boundary.strftime('%Y-%m-%dT%H:%M:%S') }}").getTime();
+    var reloading = false;
+    function tick() {
+        var diff = target - Date.now();
+        if (diff <= 0) {
+            if (!reloading) {
+                reloading = true;
+                document.getElementById("countdown").textContent = "Opening...";
+                // Wait 3 seconds to allow server clock to catch up before reloading
+                setTimeout(function() { location.reload(); }, 3000);
+            }
+            return;
+        }
+        var h = Math.floor(diff / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        var s = Math.floor((diff % 60000) / 1000);
+        document.getElementById("countdown").textContent =
+            String(h).padStart(2,"0") + "h " +
+            String(m).padStart(2,"0") + "m " +
+            String(s).padStart(2,"0") + "s";
+    }
+    tick();
+    setInterval(tick, 1000);
+})();
+{% elif not ctf_locked and ctf_end %}
+(function() {
+    var target = new Date("{{ ctf_end.strftime('%Y-%m-%dT%H:%M:%S') }}").getTime();
+    function tick() {
+        var diff = target - Date.now();
+        var el = document.getElementById("ctf-countdown");
+        if (!el) return;
+        if (diff <= 0) { el.textContent = "Time's up!"; return; }
+        var h = Math.floor(diff / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        var s = Math.floor((diff % 60000) / 1000);
+        el.textContent = String(h).padStart(2,"0") + "h " +
+                         String(m).padStart(2,"0") + "m " +
+                         String(s).padStart(2,"0") + "s remaining";
+    }
+    tick();
+    setInterval(tick, 1000);
+})();
+{% endif %}
+</script>
+{% endblock %}

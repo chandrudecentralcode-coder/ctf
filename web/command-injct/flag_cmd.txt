@@ -1,1 +1,0 @@
-CTF{command_injection_filter_bypass}

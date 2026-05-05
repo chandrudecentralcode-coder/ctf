@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}{{ team.name }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+    <div>
+        <h2 class="mb-1">
+            <i class="bi bi-people-fill" style="color:#8957e5"></i> {{ team.name }}
+        </h2>
+        <span class="text-muted small">Created {{ team.created_at[:10] }}</span>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+        {% if is_member %}
+        <span class="badge bg-success"><i class="bi bi-check-circle-fill"></i> Your Team</span>
+        <form method="POST" action="/teams/leave"
+              onsubmit="return confirm('Leave this team?')">
+            <button class="btn btn-sm btn-outline-danger">Leave Team</button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+
+    <!-- Left: members + invite code -->
+    <div class="col-md-4">
+        <div class="card p-3 mb-3">
+            <h6 class="mb-3">
+                <i class="bi bi-person-fill"></i> Members
+                <span class="badge {{ 'bg-success' if members|length < max_team else 'bg-danger' }} ms-1">
+                    {{ members|length }}/{{ max_team }}
+                </span>
+                {% if members|length >= max_team %}
+                <span class="badge bg-danger ms-1">FULL</span>
+                {% endif %}
+            </h6>
+            <ul class="list-unstyled mb-0">
+                {% for m in members %}
+                <li class="d-flex justify-content-between align-items-center mb-2">
+                    <span>
+                        {% if loop.index == 1 %}
+                        <i class="bi bi-star-fill text-warning small"></i>
+                        {% else %}
+                        <i class="bi bi-person text-muted small"></i>
+                        {% endif %}
+                        {{ m.username }}
+                        {% if m.id == session.user_id %}
+                        <span class="badge bg-secondary small ms-1">you</span>
+                        {% endif %}
+                    </span>
+                    <span class="points-color small">{{ m.score }} pts</span>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Invite code — only visible to members -->
+        {% if is_member %}
+        <div class="card p-3" style="border-color:#8957e5">
+            <h6 class="mb-2">
+                <i class="bi bi-key-fill" style="color:#8957e5"></i> Invite Code
+            </h6>
+            <div class="text-center">
+                <code style="font-size:1.5em;letter-spacing:.15em;color:#c3abff">
+                    {{ team.invite_code }}
+                </code>
+            </div>
+            <p class="text-muted small text-center mt-2 mb-0">
+                Share this code to invite members<br>
+                (max {{ max_team }} total)
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Right: team stats + solved challenges -->
+    <div class="col-md-8">
+        <div class="row g-3 mb-4">
+            <div class="col-6">
+                <div class="card p-3 text-center">
+                    <div class="display-6 fw-bold points-color">{{ team.score }}</div>
+                    <div class="text-muted small">Team Score</div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="card p-3 text-center">
+                    <div class="display-6 fw-bold text-success">{{ solved_challenges|length }}</div>
+                    <div class="text-muted small">Challenges Solved</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card p-3">
+            <h6 class="mb-3"><i class="bi bi-flag-fill text-success"></i> Solved Challenges</h6>
+            {% if solved_challenges %}
+            <div class="table-responsive">
+                <table class="table table-dark table-sm align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Challenge</th>
+                            <th>Points</th>
+                            <th>Solved By</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for s in solved_challenges %}
+                    <tr>
+                        <td class="text-muted">{{ loop.index }}</td>
+                        <td><strong>{{ s.name }}</strong></td>
+                        <td class="points-color">+{{ s.points }}</td>
+                        <td>
+                            <i class="bi bi-person-fill text-muted small"></i>
+                            {{ s.solver }}
+                        </td>
+                        <td class="text-muted small font-monospace">{{ s.solved_at[:16] }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-muted mb-0 small">No challenges solved yet. Go hack something!</p>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

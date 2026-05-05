@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Join Team{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-5">
+        <div class="card p-4">
+            <h3 class="mb-1 fw-bold text-center">
+                <i class="bi bi-box-arrow-in-right" style="color:#8957e5"></i> Join a Team
+            </h3>
+            <p class="text-muted text-center small mt-1 mb-4">
+                Enter the 8-character invite code from your team leader.
+                Teams are limited to <strong>3 members</strong> — no exceptions.
+            </p>
+
+            <form method="POST" autocomplete="off">
+                <div class="mb-4">
+                    <label class="form-label">Invite Code</label>
+                    <input type="text" name="invite_code" class="form-control text-center fw-bold"
+                           required minlength="8" maxlength="8" autofocus
+                           placeholder="XXXXXXXX" style="font-size:1.3em;letter-spacing:.15em;
+                           font-family:monospace;text-transform:uppercase">
+                    <div class="form-text">8 characters, uppercase</div>
+                </div>
+                <button type="submit" class="btn w-100 fw-bold"
+                        style="background:#8957e5;color:white">
+                    <i class="bi bi-door-open-fill"></i> Join Team
+                </button>
+            </form>
+
+            <hr style="border-color:#21262d;margin:20px 0">
+            <p class="text-center small text-muted mb-0">
+                No team yet? <a href="/teams/create">Create your own</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
