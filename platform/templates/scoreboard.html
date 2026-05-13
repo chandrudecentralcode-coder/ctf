@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+{% block title %}Scoreboard{% endblock %}
+{% block content %}
+
+<div class="d-flex align-items-center gap-3 mb-4">
+    <h2 class="mb-0 fw-bold">
+        <i class="bi bi-trophy-fill me-2" style="color:var(--gold);text-shadow:0 0 12px var(--gold)"></i>Scoreboard
+    </h2>
+    <span class="live-pill"><span class="live-dot"></span>LIVE</span>
+</div>
+
+<ul class="nav nav-tabs mb-4" id="sbTabs">
+    <li class="nav-item">
+        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#teamTab">
+            <i class="bi bi-people-fill me-1" style="color:#8957e5"></i>Teams
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#playerTab">
+            <i class="bi bi-person-fill me-1"></i>Players
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content">
+
+    <!-- ── TEAM SCOREBOARD ───────────────────────────────────── -->
+    <div class="tab-pane fade show active" id="teamTab">
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead style="border-bottom:2px solid var(--bdr)">
+                        <tr>
+                            <th width="70" class="text-center">Rank</th>
+                            <th>Team</th>
+                            <th>Score</th>
+                            <th>Challenges Solved</th>
+                            <th>Last Solve</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in teams %}
+                        <tr {% if t.id == session.team_id %}
+                            style="background:rgba(0,212,255,.05) !important"{% endif %}>
+                            <td class="text-center fw-bold">
+                                {% if loop.index == 1 %}
+                                    <span class="rank-1 fs-4">🥇</span>
+                                {% elif loop.index == 2 %}
+                                    <span class="rank-2 fs-4">🥈</span>
+                                {% elif loop.index == 3 %}
+                                    <span class="rank-3 fs-4">🥉</span>
+                                {% else %}
+                                    <span style="color:var(--muted);font-size:.9rem">{{ loop.index }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="/teams/{{ t.id }}"
+                                   style="text-decoration:none;color:var(--txt);font-weight:600;">
+                                    {{ t.name }}
+                                </a>
+                                {% if t.id == session.team_id %}
+                                <span class="badge ms-1"
+                                      style="background:rgba(255,255,255,.08);color:var(--muted);font-size:.68rem">
+                                    your team
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td class="points-color fw-bold font-monospace">{{ t.score }}</td>
+                            <td style="color:var(--muted);">
+                                <i class="bi bi-flag-fill me-1" style="color:var(--neon-g)"></i>
+                                {{ t.solve_count }}
+                            </td>
+                            <td class="font-monospace" style="color:var(--muted);font-size:.82rem;">
+                                {{ t.last_solve[:16] if t.last_solve else '—' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-5" style="color:var(--muted)">
+                                No teams yet. <a href="/teams/create" style="color:var(--neon-b)">Create one!</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── PLAYER SCOREBOARD ─────────────────────────────────── -->
+    <div class="tab-pane fade" id="playerTab">
+        <div class="card">
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0">
+                    <thead style="border-bottom:2px solid var(--bdr)">
+                        <tr>
+                            <th width="70" class="text-center">Rank</th>
+                            <th>Player</th>
+                            <th>Team</th>
+                            <th>Score</th>
+                            <th>Solves</th>
+                            <th>Last Solve</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in players %}
+                        <tr {% if u.username == session.username %}
+                            style="background:rgba(57,255,20,.04) !important"{% endif %}>
+                            <td class="text-center fw-bold">
+                                {% if loop.index == 1 %}
+                                    <span class="rank-1 fs-4">🥇</span>
+                                {% elif loop.index == 2 %}
+                                    <span class="rank-2 fs-4">🥈</span>
+                                {% elif loop.index == 3 %}
+                                    <span class="rank-3 fs-4">🥉</span>
+                                {% else %}
+                                    <span style="color:var(--muted);font-size:.9rem">{{ loop.index }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong style="color:var(--txt)">{{ u.username }}</strong>
+                                {% if u.username == session.username %}
+                                <span class="badge ms-1"
+                                      style="background:rgba(57,255,20,.1);color:var(--neon-g);font-size:.68rem">
+                                    you
+                                </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge"
+                                      style="background:#6030c0;font-size:.78rem;">
+                                    <i class="bi bi-people-fill me-1"></i>{{ u.team_name }}
+                                </span>
+                            </td>
+                            <td class="points-color fw-bold font-monospace">{{ u.score }}</td>
+                            <td style="color:var(--muted);">
+                                <i class="bi bi-flag-fill me-1" style="color:var(--neon-g)"></i>
+                                {{ u.solve_count }}
+                            </td>
+                            <td class="font-monospace" style="color:var(--muted);font-size:.82rem;">
+                                {{ u.last_solve[:16] if u.last_solve else '—' }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5" style="color:var(--muted)">
+                                {% if session.team_id %}
+                                    No members in your team yet.
+                                {% else %}
+                                    <a href="/teams/create" style="color:var(--neon-b)">Create</a> or
+                                    <a href="/teams/join" style="color:var(--neon-b)">join</a>
+                                    a team to appear on the leaderboard.
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

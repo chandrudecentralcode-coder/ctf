@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4 col-sm-10">
+        <div class="text-center mb-4">
+            <i class="bi bi-shield-fill-exclamation" style="font-size:2.5rem;color:var(--neon-r);text-shadow:0 0 16px var(--neon-r)"></i>
+            <h3 class="mt-2 fw-bold" style="color:var(--txt)">COEDF CTF 2026</h3>
+            <p class="small" style="color:var(--muted)">Sign in to access challenges</p>
+        </div>
+        <div class="card p-4" style="border-color:rgba(0,212,255,.2) !important;">
+            <h5 class="mb-4 fw-bold text-center">
+                <i class="bi bi-lock-fill me-2" style="color:var(--neon-b)"></i>Login
+            </h5>
+            <form method="POST" autocomplete="off">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control"
+                           required autofocus placeholder="Enter your username">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control"
+                           required placeholder="Enter your password">
+                </div>
+                <button type="submit" class="btn btn-danger w-100 fw-bold py-2">
+                    <i class="bi bi-box-arrow-in-right me-1"></i>Login
+                </button>
+            </form>
+            <p class="text-center mt-3 mb-0 small" style="color:var(--muted)">
+                No account?
+                <a href="/register" style="color:var(--neon-b)">Register here</a>
+            </p>
+        </div>
+        <p class="text-center mt-3 small" style="color:var(--muted);">
+            Flag format: <code>codef{WeLcOmE_To_CtF}</code>
+        </p>
+    </div>
+</div>
+{% endblock %}

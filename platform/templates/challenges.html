@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block title %}Challenges{% endblock %}
+{% block content %}
+
+{% if ctf_locked %}
+<!-- ── CTF Locked Screen ─────────────────────────────────────────────────── -->
+<div class="text-center py-5">
+    {% if ctf_state == 'not_started' %}
+    <i class="bi bi-hourglass-split" style="font-size:3.5rem;color:var(--gold);text-shadow:0 0 16px var(--gold)"></i>
+    <h2 class="mt-4 mb-2 fw-bold">CTF Has Not Started Yet</h2>
+    <p style="color:var(--muted)">The competition begins at:</p>
+    <div class="my-3 fw-black" style="font-size:2rem;color:var(--gold);text-shadow:0 0 14px var(--gold)">
+        {{ boundary.strftime('%d %b %Y &bull; %H:%M') if boundary else '—' }}
+    </div>
+    <p class="small" style="color:var(--muted)">Time remaining:</p>
+    <div class="fw-bold" style="font-size:2.2rem;color:var(--neon-b);text-shadow:0 0 12px var(--neon-b);font-family:monospace"
+         id="countdown">—</div>
+    {% else %}
+    <i class="bi bi-flag-fill" style="font-size:3.5rem;color:var(--neon-r);text-shadow:0 0 16px var(--neon-r)"></i>
+    <h2 class="mt-4 mb-2 fw-bold">CTF Has Ended</h2>
+    <p style="color:var(--muted)">
+        Competition closed at
+        <strong style="color:var(--neon-r)">
+            {{ ctf_end.strftime('%d %b %Y %H:%M') if ctf_end else '—' }}
+        </strong>.
+    </p>
+    <a href="/scoreboard" class="btn btn-outline-warning mt-3 fw-bold">
+        <i class="bi bi-trophy-fill me-1"></i> View Final Scoreboard
+    </a>
+    {% endif %}
+</div>
+
+{% else %}
+<!-- ── Normal Challenges View ────────────────────────────────────────────── -->
+
+<!-- Header -->
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h2 class="mb-0 fw-bold">
+        <i class="bi bi-flag-fill me-2" style="color:var(--neon-r)"></i>Challenges
+    </h2>
+    <div class="d-flex align-items-center gap-3">
+        <span style="color:var(--muted);font-size:.85rem;">
+            <i class="bi bi-check-circle-fill me-1" style="color:var(--neon-g)"></i>
+            <strong style="color:var(--neon-g)">{{ solved_ids|length }}</strong>
+            <span style="color:var(--muted)"> / {{ challenges|length }} solved</span>
+        </span>
+    </div>
+</div>
+
+<!-- CTF time banner -->
+{% if ctf_state == 'ended' %}
+<div class="alert alert-warning py-2 mb-3 small">
+    <i class="bi bi-flag-fill me-1"></i>
+    <strong>CTF has ended.</strong> Challenges are read-only — flag submission is closed.
+</div>
+{% elif ctf_end %}
+<div class="alert alert-info py-2 mb-3 small">
+    <i class="bi bi-clock me-1"></i>
+    CTF ends at <strong>{{ ctf_end.strftime('%d %b %Y %H:%M') }}</strong>
+    — <span id="ctf-countdown" class="fw-bold" style="color:var(--neon-b)"></span>
+</div>
+{% endif %}
+
+<!-- Category filter -->
+{% set all_cats = challenges | map(attribute='category') | unique | sort | list %}
+<div class="mb-4 d-flex flex-wrap gap-2 align-items-center">
+    <button class="btn btn-sm fw-bold filter-btn active" data-cat="all"
+            style="background:rgba(0,212,255,.15);color:var(--neon-b);border:1px solid rgba(0,212,255,.3);">
+        All <span class="ms-1 opacity-75">({{ challenges|length }})</span>
+    </button>
+    {% for cat in all_cats %}
+    <button class="btn btn-sm fw-semibold filter-btn" data-cat="{{ cat }}"
+            style="background:rgba(255,255,255,.04);color:var(--muted);border:1px solid var(--bdr);">
+        {{ cat }}
+        <span class="ms-1 opacity-75">
+            ({{ challenges | selectattr('category','eq',cat) | list | length }})
+        </span>
+    </button>
+    {% endfor %}
+</div>
+
+<!-- Challenge cards -->
+<div class="row g-3" id="challengeGrid">
+    {% for ch in challenges %}
+    <div class="col-md-6 col-lg-4 ch-card" data-cat="{{ ch.category }}">
+        <div class="card h-100 p-3 card-hover {% if ch.id in solved_ids %}solved-card{% endif %}"
+             style="cursor:pointer;position:relative;" onclick="location.href='/challenges/{{ ch.id }}'">
+
+            <!-- Solved ribbon -->
+            {% if ch.id in solved_ids %}
+            <div style="position:absolute;top:0;right:0;background:rgba(57,255,20,.15);
+                        border-bottom-left-radius:8px;padding:3px 10px;font-size:.65rem;
+                        color:var(--neon-g);font-weight:700;letter-spacing:.1em;">
+                SOLVED
+            </div>
+            {% endif %}
+
+            <!-- Category + difficulty badges -->
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
+                <span class="badge badge-cat badge-{{ ch.category|lower|replace(' ', '-') }}">
+                    {{ ch.category }}
+                </span>
+                <span class="badge
+                    {% if ch.difficulty == 'Easy' %}badge-easy
+                    {% elif ch.difficulty == 'Medium' %}badge-medium
+                    {% elif ch.difficulty == 'Hard' %}badge-hard
+                    {% else %}badge-insane{% endif %}">
+                    {{ ch.difficulty }}
+                </span>
+            </div>
+
+            <!-- Challenge name -->
+            <h5 class="mb-1 fw-bold" style="color:var(--txt);font-size:.98rem;line-height:1.3;">
+                {% if ch.id in solved_ids %}
+                <i class="bi bi-check-circle-fill me-1" style="color:var(--neon-g)"></i>
+                {% else %}
+                <i class="bi bi-lock-fill me-1" style="color:var(--muted);font-size:.8rem"></i>
+                {% endif %}
+                {{ ch.name }}
+            </h5>
+
+            <!-- Description -->
+            <p class="small mb-3 lh-sm" style="color:var(--muted);">
+                {{ ch.description[:100] }}{% if ch.description|length > 100 %}…{% endif %}
+            </p>
+
+            <!-- Footer -->
+            <div class="d-flex justify-content-between align-items-center mt-auto pt-2"
+                 style="border-top:1px solid var(--bdr);">
+                <span class="points-color fw-bold">
+                    <i class="bi bi-star-fill me-1" style="font-size:.8rem"></i>{{ ch.points }} pts
+                </span>
+                <span class="small" style="color:var(--muted);">
+                    <i class="bi bi-people me-1"></i>{{ solve_counts.get(ch.id, 0) }} solve{{ 's' if solve_counts.get(ch.id, 0) != 1 }}
+                </span>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- No results message -->
+<div id="noResults" class="text-center py-5" style="display:none;">
+    <i class="bi bi-search" style="font-size:2.5rem;color:var(--muted)"></i>
+    <p class="mt-2" style="color:var(--muted)">No challenges in this category yet.</p>
+</div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+/* ── Category filter ──────────────────────────────────── */
+document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+        var cat = this.dataset.cat;
+
+        document.querySelectorAll('.filter-btn').forEach(function(b) {
+            b.style.background = 'rgba(255,255,255,.04)';
+            b.style.color = 'var(--muted)';
+            b.style.borderColor = 'var(--bdr)';
+            b.classList.remove('active');
+        });
+        this.style.background = 'rgba(0,212,255,.15)';
+        this.style.color = 'var(--neon-b)';
+        this.style.borderColor = 'rgba(0,212,255,.3)';
+        this.classList.add('active');
+
+        var cards = document.querySelectorAll('.ch-card');
+        var visible = 0;
+        cards.forEach(function(card) {
+            if (cat === 'all' || card.dataset.cat === cat) {
+                card.style.display = '';
+                visible++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        document.getElementById('noResults').style.display = visible === 0 ? '' : 'none';
+    });
+});
+
+/* ── Countdown ────────────────────────────────────────── */
+{% if ctf_locked and ctf_state == 'not_started' and boundary %}
+(function() {
+    var target = new Date("{{ boundary.strftime('%Y-%m-%dT%H:%M:%S') }}").getTime();
+    var reloading = false;
+    function tick() {
+        var diff = target - Date.now();
+        if (diff <= 0) {
+            if (!reloading) { reloading = true; setTimeout(function() { location.reload(); }, 3000); }
+            document.getElementById("countdown").textContent = "Opening...";
+            return;
+        }
+        var h = Math.floor(diff / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        var s = Math.floor((diff % 60000) / 1000);
+        document.getElementById("countdown").textContent =
+            String(h).padStart(2,"0") + "h " + String(m).padStart(2,"0") + "m " + String(s).padStart(2,"0") + "s";
+    }
+    tick(); setInterval(tick, 1000);
+})();
+{% elif not ctf_locked and ctf_end %}
+(function() {
+    var target = new Date("{{ ctf_end.strftime('%Y-%m-%dT%H:%M:%S') }}").getTime();
+    function tick() {
+        var diff = target - Date.now();
+        var el = document.getElementById("ctf-countdown");
+        if (!el) return;
+        if (diff <= 0) { el.textContent = "Time's up!"; return; }
+        var h = Math.floor(diff / 3600000);
+        var m = Math.floor((diff % 3600000) / 60000);
+        var s = Math.floor((diff % 60000) / 1000);
+        el.textContent = String(h).padStart(2,"0") + "h " + String(m).padStart(2,"0") + "m " + String(s).padStart(2,"0") + "s remaining";
+    }
+    tick(); setInterval(tick, 1000);
+})();
+{% endif %}
+</script>
+{% endblock %}

@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}{{ ch.name }}{% endblock %}
+{% block content %}
+
+<!-- Breadcrumb -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="/challenges">Challenges</a></li>
+        <li class="breadcrumb-item active" style="color:var(--muted)">{{ ch.name }}</li>
+    </ol>
+</nav>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+
+        <!-- Challenge info card -->
+        <div class="card p-4 mb-4">
+            <!-- Top: badges -->
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+                <div class="d-flex gap-2 flex-wrap">
+                    <span class="badge badge-cat badge-{{ ch.category|lower|replace(' ', '-') }}">
+                        {{ ch.category }}
+                    </span>
+                    <span class="badge
+                        {% if ch.difficulty=='Easy' %}badge-easy
+                        {% elif ch.difficulty=='Medium' %}badge-medium
+                        {% elif ch.difficulty=='Hard' %}badge-hard
+                        {% else %}badge-insane{% endif %}">
+                        {{ ch.difficulty }}
+                    </span>
+                </div>
+                <span class="points-color fw-bold fs-5">
+                    <i class="bi bi-star-fill me-1" style="font-size:.85rem"></i>{{ ch.points }} pts
+                </span>
+            </div>
+
+            <!-- Name -->
+            <h2 class="fw-bold mb-2" style="color:var(--txt);">{{ ch.name }}</h2>
+
+            <!-- Description -->
+            <p class="mb-3 lh-lg" style="color:var(--txt);">{{ ch.description }}</p>
+
+            <hr style="border-color:var(--bdr);opacity:1">
+
+            <!-- Meta row -->
+            <div class="d-flex flex-wrap gap-4 small" style="color:var(--muted);">
+                <span>
+                    <i class="bi bi-people me-1" style="color:var(--neon-b)"></i>
+                    <strong style="color:var(--txt)">{{ solve_count }}</strong>
+                    solve{{ 's' if solve_count != 1 }}
+                </span>
+                <span>
+                    <i class="bi bi-server me-1" style="color:var(--neon-b)"></i>
+                    <a href="/proxy/{{ ch.port }}/" target="_blank"
+                       style="color:var(--neon-b);text-decoration:none;"
+                       onclick="event.stopPropagation()">
+                        Open Challenge &nbsp;<i class="bi bi-box-arrow-up-right" style="font-size:.75rem"></i>
+                    </a>
+                </span>
+            </div>
+        </div>
+
+        <!-- CTF ended banner -->
+        {% if ctf_ended %}
+        <div class="alert alert-warning d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-flag-fill fs-5"></i>
+            <div><strong>CTF has ended.</strong> You can still view this challenge, but flag submission is closed.</div>
+        </div>
+        {% endif %}
+
+        <!-- Already solved banner -->
+        {% if solved %}
+        <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-check-circle-fill fs-5"></i>
+            <div><strong>Challenge solved!</strong> Well done — points have been awarded.</div>
+        </div>
+        {% endif %}
+
+        <!-- Rate-limit lock banner -->
+        {% if locked %}
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-stopwatch-fill fs-5"></i>
+            <div>
+                <strong>Submission locked.</strong>
+                Too many wrong attempts — wait <strong>{{ cooldown }}s</strong> before trying again.
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Flag submission -->
+        {% if not solved and not ctf_ended %}
+        <div class="card p-4 mb-4 {% if locked %}locked-overlay{% endif %}"
+             style="border-color:rgba(57,255,20,.2) !important;">
+            <h5 class="mb-3 fw-bold">
+                <i class="bi bi-flag-fill me-2" style="color:var(--neon-r)"></i>Submit Flag
+                {% if not locked %}
+                <span class="badge ms-2 small"
+                      style="background:rgba(255,255,255,.08);color:var(--muted);font-weight:500;font-size:.72rem"
+                      id="attemptsLeft">
+                    {{ attempts_left }} attempt{{ 's' if attempts_left != 1 }} left
+                </span>
+                {% endif %}
+            </h5>
+            <div class="mb-2 small" style="color:var(--muted);">
+                Flag format: <code>codef{your_flag_here}</code>
+            </div>
+            <div class="input-group">
+                <input type="text" id="flagInput" class="form-control flag-input"
+                       placeholder="codef{...}" autocomplete="off" spellcheck="false"
+                       {% if locked %}disabled{% endif %}>
+                <button class="btn btn-danger fw-bold px-4" onclick="submitFlag({{ ch.id }})"
+                        {% if locked %}disabled{% endif %}>
+                    <i class="bi bi-send-fill me-1"></i>Submit
+                </button>
+            </div>
+            <div id="flagResult" class="mt-2"></div>
+        </div>
+
+        {% endif %}
+
+    </div>
+
+    <!-- Right column: solvers -->
+    <div class="col-lg-4">
+        <div class="card p-3">
+            <h6 class="mb-3 fw-bold">
+                <i class="bi bi-people-fill me-1" style="color:var(--neon-b)"></i>Solvers
+                <span class="badge ms-1"
+                      style="background:rgba(255,255,255,.07);color:var(--muted);font-size:.72rem">
+                    {{ solve_count }}
+                </span>
+            </h6>
+            {% if solvers %}
+            <ul class="list-unstyled mb-0">
+                {% for s in solvers %}
+                <li class="d-flex justify-content-between align-items-center mb-2 small">
+                    <span>
+                        {% if loop.index0 == 0 %}
+                            <i class="bi bi-droplet-fill first-blood me-1" title="First Blood!"></i>
+                        {% elif loop.index0 == 1 %}
+                            <i class="bi bi-trophy-fill rank-2 me-1"></i>
+                        {% elif loop.index0 == 2 %}
+                            <i class="bi bi-trophy-fill rank-3 me-1"></i>
+                        {% else %}
+                            <i class="bi bi-person me-1" style="color:var(--muted)"></i>
+                        {% endif %}
+                        <strong style="color:var(--txt)">{{ s.username }}</strong>
+                    </span>
+                    <span class="font-monospace" style="color:var(--muted);font-size:.75rem">
+                        {{ s.solved_at[:16] if s.solved_at else '' }}
+                    </span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="small mb-0" style="color:var(--muted)">
+                <i class="bi bi-droplet-fill me-1" style="color:var(--neon-r)"></i>
+                No solvers yet — get first blood!
+            </p>
+            {% endif %}
+        </div>
+
+        <!-- Category info box -->
+        <div class="card p-3 mt-3"
+             style="border-color:rgba(0,212,255,.15) !important;background:rgba(0,212,255,.03)">
+            <h6 class="mb-2 fw-bold small" style="color:var(--neon-b);letter-spacing:.08em;text-transform:uppercase">
+                About this category
+            </h6>
+            <p class="small mb-0" style="color:var(--muted);line-height:1.65">
+                {% if ch.category == 'Web' or ch.category == 'Web Exploitation' %}
+                    Exploit web application vulnerabilities like SQL injection, XSS, SSRF, IDOR, command injection, and authentication bypass.
+                {% elif ch.category == 'Cryptography' %}
+                    Break encryption schemes, crack ciphers, exploit weak key implementations, and decode obfuscated data.
+                {% elif ch.category == 'Steganography' %}
+                    Uncover data hidden inside images, audio, documents, or other media using steganographic analysis techniques.
+                {% elif ch.category == 'OSINT' %}
+                    Use open-source intelligence techniques to gather information from public sources and trace digital footprints.
+                {% elif ch.category == 'Forensics' %}
+                    Analyse disk images, memory dumps, network captures, and log files to reconstruct events and extract evidence.
+                {% elif ch.category == 'Networking' %}
+                    Examine network traffic, exploit protocol weaknesses, and analyse packet captures to find hidden data.
+                {% elif ch.category == 'AI Security' %}
+                    Exploit AI/ML systems through prompt injection, adversarial inputs, and model manipulation techniques.
+                {% elif ch.category == 'Reverse Engineering' %}
+                    Decompile binaries, analyse obfuscated code, and reverse engineer executables to understand their logic.
+                {% elif ch.category == 'Binary Exploitation' %}
+                    Exploit memory corruption bugs — buffer overflows, format strings, ROP chains, and heap exploits.
+                {% elif ch.category == 'Mobile Security' %}
+                    Analyse APK files, reverse mobile apps, and exploit Android/iOS vulnerabilities.
+                {% elif ch.category == 'Cloud Security' %}
+                    Find misconfigurations in cloud infrastructure — exposed buckets, IAM privilege escalation, and API leaks.
+                {% elif ch.category == 'Malware Analysis' %}
+                    Perform static and dynamic analysis of malicious code to extract indicators and understand behaviour.
+                {% else %}
+                    Solve challenges in the {{ ch.category }} domain to earn points for your team.
+                {% endif %}
+            </p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+let attemptsLeft = {{ attempts_left }};
+
+async function submitFlag(cid) {
+    const flag      = document.getElementById('flagInput').value.trim();
+    const resultDiv = document.getElementById('flagResult');
+    if (!flag) return;
+
+    const resp = await fetch(`/api/submit/${cid}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `flag=${encodeURIComponent(flag)}`
+    });
+    if (!resp.ok && resp.status !== 200) {
+        resultDiv.innerHTML = `<div class="alert alert-danger mt-1 py-2 small">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>Server error. Please try again.</div>`;
+        return;
+    }
+    const data = await resp.json();
+
+    if (data.status === 'correct') {
+        resultDiv.innerHTML = `<div class="alert alert-success mt-1 py-2">
+            <i class="bi bi-check-circle-fill me-1"></i> ${data.msg}
+        </div>`;
+        setTimeout(() => location.reload(), 1800);
+
+    } else if (data.status === 'already') {
+        resultDiv.innerHTML = `<div class="alert alert-info mt-1 py-2">${data.msg}</div>`;
+
+    } else if (data.status === 'locked') {
+        resultDiv.innerHTML = `<div class="alert alert-danger mt-1 py-2">
+            <i class="bi bi-stopwatch-fill me-1"></i> ${data.msg}
+        </div>`;
+        setTimeout(() => location.reload(), 2000);
+
+    } else {
+        attemptsLeft = Math.max(0, attemptsLeft - 1);
+        const el = document.getElementById('attemptsLeft');
+        if (el) el.textContent = `${attemptsLeft} attempt${attemptsLeft !== 1 ? 's' : ''} left`;
+
+        const cls = attemptsLeft === 0 ? 'danger' : 'warning';
+        resultDiv.innerHTML = `<div class="alert alert-${cls} mt-1 py-2">
+            <i class="bi bi-x-circle-fill me-1"></i> ${data.msg}
+        </div>`;
+        if (attemptsLeft === 0) setTimeout(() => location.reload(), 1500);
+    }
+}
+
+document.getElementById('flagInput')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') submitFlag({{ ch.id }});
+});
+</script>
+{% endblock %}

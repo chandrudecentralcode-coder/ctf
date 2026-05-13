@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-5 col-sm-10">
+        <div class="text-center mb-4">
+            <i class="bi bi-shield-fill-exclamation" style="font-size:2.5rem;color:var(--neon-r);text-shadow:0 0 16px var(--neon-r)"></i>
+            <h3 class="mt-2 fw-bold" style="color:var(--txt)">COEDF CTF 2026</h3>
+            <p class="small" style="color:var(--muted)">Create your account to compete</p>
+        </div>
+        <div class="card p-4" style="border-color:rgba(0,212,255,.2) !important;">
+            <h5 class="mb-2 fw-bold text-center">
+                <i class="bi bi-person-plus-fill me-2" style="color:var(--neon-b)"></i>Register
+            </h5>
+
+            {% if whitelist_active %}
+            <div class="alert alert-warning d-flex gap-2 align-items-start mt-2 mb-3 py-2 small">
+                <i class="bi bi-shield-lock-fill mt-1 flex-shrink-0"></i>
+                <div>
+                    <strong>Invite-only CTF.</strong><br>
+                    Only pre-approved email addresses can register.
+                    Contact <strong>coedfevents@gmail.com</strong> if your email is not accepted.
+                </div>
+            </div>
+            {% else %}
+            <p class="text-center small mt-2 mb-3" style="color:var(--muted)">Open registration</p>
+            {% endif %}
+
+            <form method="POST" autocomplete="off">
+                <div class="mb-3">
+                    <label class="form-label">Username</label>
+                    <input type="text" name="username" class="form-control"
+                           required autofocus maxlength="32" placeholder="Choose a username">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">
+                        Email Address
+                        {% if whitelist_active %}
+                        <span class="badge ms-1"
+                              style="background:rgba(255,165,0,.15);color:#ffcc66;border:1px solid rgba(255,165,0,.3);font-size:.68rem">
+                            <i class="bi bi-lock-fill"></i> Whitelisted only
+                        </span>
+                        {% endif %}
+                    </label>
+                    <input type="email" name="email" class="form-control"
+                           required placeholder="your@email.com">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control"
+                           required minlength="8" placeholder="Minimum 8 characters">
+                </div>
+                <button type="submit" class="btn btn-danger w-100 fw-bold py-2">
+                    <i class="bi bi-person-check-fill me-1"></i>Create Account
+                </button>
+            </form>
+
+            <p class="text-center mt-3 mb-0 small" style="color:var(--muted)">
+                Already registered?
+                <a href="/login" style="color:var(--neon-b)">Login</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

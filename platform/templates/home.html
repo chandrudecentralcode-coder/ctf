@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<!-- ── Hero ───────────────────────────────────────────────────────────────── -->
+<div class="text-center py-5">
+    <div class="mb-3">
+        <span style="font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;color:var(--neon-b);
+                     background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.25);
+                     padding:5px 18px;border-radius:20px;">
+            Center of Excellence in Digital Forensics — Chennai
+        </span>
+    </div>
+
+    <h1 class="fw-black mb-1" style="font-size:clamp(2.2rem,6vw,4rem);letter-spacing:-.01em;">
+        <span style="background:linear-gradient(135deg,#fff 0%,var(--neon-b) 40%,var(--neon-p) 80%);
+                     -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+                     filter:drop-shadow(0 0 20px rgba(0,212,255,.35));">
+            Capture The Flag
+        </span>
+    </h1>
+    <h2 class="fw-bold mb-2" style="color:var(--neon-g);text-shadow:0 0 12px var(--neon-g);
+                                     font-size:clamp(1rem,3vw,1.6rem);letter-spacing:.18em;">
+        CTF CHALLENGE 2026
+    </h2>
+
+    <div class="d-flex flex-wrap justify-content-center gap-3 mb-3">
+        <span class="small" style="color:var(--muted)">
+            <i class="bi bi-calendar-event me-1" style="color:var(--neon-b)"></i>23 May 2026
+        </span>
+        <span class="small" style="color:var(--muted)">
+            <i class="bi bi-clock me-1" style="color:var(--neon-b)"></i>10:00 AM – 6:00 PM
+        </span>
+        <span class="small" style="color:var(--muted)">
+            <i class="bi bi-building me-1" style="color:var(--neon-b)"></i>Offline · Chennai
+        </span>
+        <span class="small" style="color:var(--muted)">
+            <i class="bi bi-people-fill me-1" style="color:var(--neon-p)"></i>3 Members per Team
+        </span>
+    </div>
+
+    <div class="mb-4">
+        <code style="font-size:1rem;color:var(--neon-g);text-shadow:0 0 10px var(--neon-g);
+                     background:rgba(57,255,20,.07);border:1px solid rgba(57,255,20,.25);
+                     padding:8px 22px;border-radius:6px;letter-spacing:.06em;">
+            Flag Format: codef{WeLcOmE_To_CtF}
+        </code>
+    </div>
+
+    {% if email_restricted %}
+ 
+
+    {% endif %}
+
+    <div class="mt-2">
+        {% if not session.username %}
+        <a href="/register" class="btn btn-danger btn-lg fw-bold me-2 px-4">
+            <i class="bi bi-person-plus-fill me-1"></i>Register Now
+        </a>
+        <a href="/login" class="btn btn-outline-secondary btn-lg px-4">Login</a>
+        {% else %}
+        <a href="/challenges" class="btn btn-danger btn-lg fw-bold me-2 px-4">
+            <i class="bi bi-flag-fill me-1"></i>View Challenges
+        </a>
+        {% if not session.team_id %}
+        <a href="/teams/create" class="btn btn-outline-light btn-lg px-4">Create Team</a>
+        {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<!-- ── Stats ───────────────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-5 text-center">
+    <div class="col-6 col-md-3">
+        <div class="card p-3">
+            <div class="fw-black mb-1" style="font-size:2rem;color:var(--neon-b);text-shadow:0 0 10px rgba(0,212,255,.4)">
+                {{ stats.challenges }}
+            </div>
+            <div class="small" style="color:var(--muted)">
+                <i class="bi bi-flag me-1"></i>Challenges
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card p-3">
+            <div class="fw-black mb-1" style="font-size:2rem;color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,.4)">
+                {{ stats.users }}
+            </div>
+            <div class="small" style="color:var(--muted)">
+                <i class="bi bi-person me-1"></i>Players
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card p-3">
+            <div class="fw-black mb-1" style="font-size:2rem;color:#8957e5">{{ stats.teams }}</div>
+            <div class="small" style="color:var(--muted)">
+                <i class="bi bi-people me-1"></i>Teams
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="card p-3">
+            <div class="fw-black mb-1" style="font-size:2rem;color:var(--neon-g);text-shadow:0 0 10px rgba(57,255,20,.4)">
+                {{ stats.solves }}
+            </div>
+            <div class="small" style="color:var(--muted)">
+                <i class="bi bi-check-circle me-1"></i>Solves
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Categories showcase ────────────────────────────────────────────────── -->
+<h5 class="fw-bold mb-3" style="color:var(--txt);letter-spacing:.05em;">
+    <i class="bi bi-grid-3x3-gap-fill me-2" style="color:var(--neon-p)"></i>
+    Challenge Categories
+</h5>
+<div class="row g-2 mb-5">
+    {% set cats = [
+        ('Web Exploitation',       'bi-globe2',         'web',                '#00d4ff', 'SQL Injection, XSS, LFI, IDOR, Command Injection, JWT'),
+        ('Cryptography',           'bi-key-fill',       'cryptography',       '#ffd700', 'Caesar Cipher, RSA, AES, Hash Cracking, Encoding'),
+        ('Steganography',          'bi-image-fill',     'steganography',      '#ff6ec7', 'Hidden pixels, Audio steganography, Metadata analysis'),
+        ('OSINT',                  'bi-binoculars-fill','osint',              '#50ff50', 'Social footprint, Geo-location, Public records'),
+        ('Forensics',              'bi-search',         'forensics',          '#00ffcc', 'Log analysis, Memory dumps, Disk images'),
+        ('Networking',             'bi-wifi',           'networking',         '#9f78ff', 'Packet capture, DNS tunnelling, Protocol exploits'),
+        ('AI Security',            'bi-robot',          'ai-security',        '#e040fb', 'Prompt injection, Model jailbreaking, Adversarial AI'),
+        ('Reverse Engineering',    'bi-cpu-fill',       'reverse-engineering','#c060ff', 'Binary analysis, Decompilation, Obfuscated code'),
+        ('Binary Exploitation',    'bi-terminal-fill',  'binary-exploitation','#ff5252', 'Buffer overflow, ROP chains, Format string attacks'),
+        ('Mobile Security',        'bi-phone-fill',     'mobile-security',    '#ff9a00', 'APK analysis, Android vulnerabilities, App reversing'),
+        ('Cloud Security',         'bi-cloud-fill',     'cloud-security',     '#4fc3f7', 'S3 misconfig, IAM escalation, Serverless exploits'),
+        ('Malware Analysis',       'bi-bug-fill',       'malware-analysis',   '#ff5252', 'Static/dynamic analysis, String extraction, Sandbox'),
+    ] %}
+    {% for name, icon, cls, color, desc in cats %}
+    <div class="col-6 col-md-4 col-lg-3">
+        <div class="card p-2 h-100" style="border-left:2px solid {{ color }}20; border-top-color: {{ color }}30 !important;">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi {{ icon }} small" style="color: {{ color }};"></i>
+                <span class="small fw-bold" style="color: {{ color }}; font-size:.78rem;">{{ name }}</span>
+            </div>
+            <div style="font-size:.7rem;color:var(--muted);line-height:1.4;">{{ desc }}</div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ── Info cards ─────────────────────────────────────────────────────────── -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="card p-4 h-100">
+            <h5 class="mb-3 fw-bold">
+                <i class="bi bi-info-circle-fill me-2" style="color:var(--neon-b)"></i>How It Works
+            </h5>
+            <ol class="lh-lg mb-0" style="color:var(--txt);padding-left:1.4rem;">
+                <li class="mb-1">Register with your pre-approved email address</li>
+                <li class="mb-1">Create or join a team — max <strong style="color:var(--neon-b)">{{ max_team }} members</strong></li>
+                <li class="mb-1">Browse 12 categories covering all cybersecurity domains</li>
+                <li class="mb-1">Exploit the vulnerability and find the flag</li>
+                <li class="mb-1">Submit the flag in format <code>codef{...}</code> for points</li>
+                <li>Both you <em>and</em> your team score the points!</li>
+            </ol>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card p-4 h-100">
+            <h5 class="mb-3 fw-bold">
+                <i class="bi bi-people-fill me-2" style="color:#8957e5"></i>Team Rules &amp; Scoring
+            </h5>
+            <ul class="lh-lg mb-0" style="color:var(--txt);padding-left:1.4rem;">
+                <li class="mb-1">Maximum <strong style="color:#8957e5">{{ max_team }} members</strong> per team</li>
+                <li class="mb-1">Join using a secret <strong>invite code</strong></li>
+                <li class="mb-1">Team score = sum of all unique solves by members</li>
+                <li class="mb-1">First team member to solve earns team points</li>
+                <li class="mb-1">Wrong flag limit: <strong style="color:var(--neon-r)">{{ attempt_limit }} attempts</strong> then {{ cooldown }}s cooldown</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Prizes -->
+    <div class="col-lg-12">
+        <div class="card p-4" style="border-top:2px solid var(--gold);background:rgba(255,215,0,.03)">
+            <h5 class="mb-3 fw-bold" style="color:var(--gold)">
+                <i class="bi bi-trophy-fill me-2"></i>Prize Pool — ₹ 6,000
+            </h5>
+            <div class="row g-3 text-center">
+                <div class="col-4">
+                    <div class="p-3 rounded" style="background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.25)">
+                        <div class="fs-4">🥇</div>
+                        <div class="fw-black fs-4" style="color:var(--gold)">₹3,000</div>
+                        <div class="small" style="color:var(--muted)">1st Place</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-3 rounded" style="background:rgba(192,192,192,.06);border:1px solid rgba(192,192,192,.2)">
+                        <div class="fs-4">🥈</div>
+                        <div class="fw-black fs-4" style="color:#c0c0c0">₹2,000</div>
+                        <div class="small" style="color:var(--muted)">2nd Place</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="p-3 rounded" style="background:rgba(205,127,50,.06);border:1px solid rgba(205,127,50,.2)">
+                        <div class="fs-4">🥉</div>
+                        <div class="fw-black fs-4" style="color:#cd7f32">₹1,000</div>
+                        <div class="small" style="color:var(--muted)">3rd Place</div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <span class="small" style="color:var(--muted)">
+                    Registration fee: <strong style="color:var(--neon-p)">₹1,000 per team</strong>
+                    &nbsp;|&nbsp; Venue: 176, 5th Cross St, Burma Colony, Perungudi, Chennai — 600 096
+                    &nbsp;|&nbsp; <i class="bi bi-telephone-fill"></i> 72994 55562
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
