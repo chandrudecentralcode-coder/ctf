@@ -1,0 +1,202 @@
+version: "3.8"
+
+services:
+  platform:
+    build: ./platform
+    container_name: ctf-platform
+    ports:
+      - "8000:8000"
+    volumes:
+      - ctf-data:/data
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Kolkata
+      - SECRET_KEY=9f5bf06bbe7fe94191080e888836c937e408bfa559476832bb0bfe04cb91e16d
+      # ── Email whitelist ──────────────────────────────────────────────────────
+      - ALLOWED_EMAILS=chandru@gmail.com,chandru@decencode.com,bob@ctfteam.com,charlie@ctfteam.com,diana@ctfteam.com,eve@ctfteam.com,frank@ctfteam.com
+      # ── Admin panel password ─────────────────────────────────────────────────
+      - ADMIN_PASSWORD=ctfadmin@2024
+
+  # ── Web Exploitation ─────────────────────────────────────────────────────────
+  ch47:
+    build: ./challenges/ch47-robots
+    container_name: ctf-ch47
+    ports: ["5001:5000"]
+    restart: unless-stopped
+
+  ch48:
+    build: ./challenges/ch48-js
+    container_name: ctf-ch48
+    ports: ["5002:5000"]
+    restart: unless-stopped
+
+  ch49:
+    build: ./challenges/ch49-sqli
+    container_name: ctf-ch49
+    ports: ["5003:5000"]
+    restart: unless-stopped
+
+  ch50:
+    build: ./challenges/ch50-idor
+    container_name: ctf-ch50
+    ports: ["5004:5000"]
+    restart: unless-stopped
+
+  ch51:
+    build: ./challenges/ch51-cmdi
+    container_name: ctf-ch51
+    ports: ["5005:5000"]
+    restart: unless-stopped
+
+  ch52:
+    build: ./challenges/ch52-lfi
+    container_name: ctf-ch52
+    ports: ["5006:5000"]
+    restart: unless-stopped
+
+  ch53:
+    build: ./challenges/ch53-cookie
+    container_name: ctf-ch53
+    ports: ["5007:5000"]
+    restart: unless-stopped
+
+  ch54:
+    build: ./challenges/ch54-jwt
+    container_name: ctf-ch54
+    ports: ["5008:5000"]
+    restart: unless-stopped
+
+  # ── Cryptography ─────────────────────────────────────────────────────────────
+  ch55:
+    build: ./challenges/ch55-caesar
+    container_name: ctf-ch55
+    ports: ["5009:5000"]
+    restart: unless-stopped
+
+  ch56:
+    build: ./challenges/ch56-rsa
+    container_name: ctf-ch56
+    ports: ["5010:5000"]
+    restart: unless-stopped
+
+  # ── Steganography ─────────────────────────────────────────────────────────────
+  ch57:
+    build: ./challenges/ch57-steg
+    container_name: ctf-ch57
+    ports: ["5011:5000"]
+    restart: unless-stopped
+
+  ch58:
+    build: ./challenges/ch58-steg-meta
+    container_name: ctf-ch58
+    ports: ["5012:5000"]
+    restart: unless-stopped
+
+  # ── OSINT ────────────────────────────────────────────────────────────────────
+  ch59:
+    build: ./challenges/ch59-osint
+    container_name: ctf-ch59
+    ports: ["5013:5000"]
+    restart: unless-stopped
+
+  ch60:
+    build: ./challenges/ch60-osint-geo
+    container_name: ctf-ch60
+    ports: ["5014:5000"]
+    restart: unless-stopped
+
+  # ── Forensics ────────────────────────────────────────────────────────────────
+  ch61:
+    build: ./challenges/ch61-forensics
+    container_name: ctf-ch61
+    ports: ["5015:5000"]
+    restart: unless-stopped
+
+  ch62:
+    build: ./challenges/ch62-forensics-log
+    container_name: ctf-ch62
+    ports: ["5016:5000"]
+    restart: unless-stopped
+
+  # ── Networking ───────────────────────────────────────────────────────────────
+  ch63:
+    build: ./challenges/ch63-network
+    container_name: ctf-ch63
+    ports: ["5017:5000"]
+    restart: unless-stopped
+
+  # ── AI Security ──────────────────────────────────────────────────────────────
+  ch64:
+    build: ./challenges/ch64-ai
+    container_name: ctf-ch64
+    ports: ["5018:5000"]
+    restart: unless-stopped
+
+  # ── Reverse Engineering ──────────────────────────────────────────────────────
+  ch65:
+    build: ./challenges/ch65-rev
+    container_name: ctf-ch65
+    ports: ["5019:5000"]
+    restart: unless-stopped
+
+  ch66:
+    build: ./challenges/ch66-rev-js
+    container_name: ctf-ch66
+    ports: ["5020:5000"]
+    restart: unless-stopped
+
+  # ── Binary Exploitation ──────────────────────────────────────────────────────
+  ch67:
+    build: ./challenges/ch67-pwn
+    container_name: ctf-ch67
+    ports: ["5021:5000"]
+    restart: unless-stopped
+
+  ch68:
+    build: ./challenges/ch68-format
+    container_name: ctf-ch68
+    ports: ["5022:5000"]
+    restart: unless-stopped
+
+  # ── Mobile Security ──────────────────────────────────────────────────────────
+  ch69:
+    build: ./challenges/ch69-mobile
+    container_name: ctf-ch69
+    ports: ["5023:5000"]
+    restart: unless-stopped
+
+  # ── Cloud Security ───────────────────────────────────────────────────────────
+  ch70:
+    build: ./challenges/ch70-cloud
+    container_name: ctf-ch70
+    ports: ["5024:5000"]
+    restart: unless-stopped
+
+  # ── Malware Analysis ─────────────────────────────────────────────────────────
+  ch71:
+    build: ./challenges/ch71-malware
+    container_name: ctf-ch71
+    ports: ["5025:5000"]
+    restart: unless-stopped
+
+  # ── Reverse Engineering (new) ─────────────────────────────────────────────
+  ch72:
+    build: ./challenges/ch72-rev-easy
+    container_name: ctf-ch72
+    ports: ["5026:5000"]
+    restart: unless-stopped
+
+  ch73:
+    build: ./challenges/ch73-rev-xor
+    container_name: ctf-ch73
+    ports: ["5027:5000"]
+    restart: unless-stopped
+
+  ch74:
+    build: ./challenges/ch74-rev-vm
+    container_name: ctf-ch74
+    ports: ["5028:5000"]
+    restart: unless-stopped
+
+volumes:
+  ctf-data:
